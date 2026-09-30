@@ -110,6 +110,20 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(anf["results"], [])
         self.assertEqual(len(anf["files"]), 2)
 
+    def test_shipped_single_output_anf_example(self):
+        source = ROOT / "examples" / "single-output" / "quadratic_4var_anf.txt"
+        out = self.root / "shipped-anf-output"
+        done = subprocess.run(
+            [str(CORE), "--input", str(source), "--kind", "auto", "--radix", "auto",
+             "--metrics", "balance,degree,nonlinearity", "--out", str(out)],
+            capture_output=True, text=True, encoding="utf-8", timeout=90,
+        )
+        self.assertEqual(done.returncode, 0, done.stdout)
+        data = json.loads(done.stdout)
+        self.assertTrue(data["ok"], data.get("error"))
+        self.assertEqual(data["inputs"][0]["kind"], "anf")
+        self.assertEqual((out / "Truth_table.txt").read_text(encoding="utf-8").strip(), "1100110011000011")
+
     def test_user_anf_style_and_fixed_output_names(self):
         example = (ROOT / "tests" / "fixtures" / "anf_user_style.txt").read_text(encoding="utf-8")
         data = self.run_core(example, "balance,degree", suffix="示例.txt")

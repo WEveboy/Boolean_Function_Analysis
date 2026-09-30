@@ -154,6 +154,7 @@ function SingleOutput() {
   function acceptPaths(paths, target) {
     const clean = paths.filter(Boolean).filter(p => p.toLowerCase().endsWith('.txt'))
     if (clean.length !== paths.length) { setError('只能拖入 TXT 文本文件。'); return }
+    if (mode === 'single') { setKind('auto'); setRadix('auto'); setN('') }
     setFiles(current => {
       const next = [...current]
       if (mode === 'cross' && clean.length >= 2) { next[0] = clean[0]; next[1] = clean[1] }

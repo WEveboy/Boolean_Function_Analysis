@@ -45,6 +45,7 @@ export default function MultiOutput() {
   const [outputDir, setOutputDir] = useState('')
   const [n, setN] = useState(4)
   const [m, setM] = useState(4)
+  const [kind, setKind] = useState('auto')
   const [radix, setRadix] = useState('hex')
   const [transpose, setTranspose] = useState(false)
   const [metrics, setMetrics] = useState(defaults)
@@ -55,16 +56,16 @@ export default function MultiOutput() {
   const [busy, setBusy] = useState(false)
   const count = useMemo(() => metrics.size, [metrics])
   const toggle = id => setMetrics(current => { const next = new Set(current); next.has(id) ? next.delete(id) : next.add(id); return next })
-  const chooseInput = async () => { const p = await window.vbfDesktop.pickInput(); if (p) { setInput(p); setResult(null); setError('') } }
+  const chooseInput = async () => { const p = await window.vbfDesktop.pickInput(); if (p) { setInput(p); setKind('auto'); setResult(null); setError('') } }
   const dropInput = event => {
     event.preventDefault()
     const file = event.dataTransfer?.files?.[0]
-    if (file) { const p = window.vbfDesktop.pathForFile(file); if (p) { setInput(p); setResult(null); setError('') } }
+    if (file) { const p = window.vbfDesktop.pathForFile(file); if (p) { setInput(p); setKind('auto'); setResult(null); setError('') } }
   }
   const run = async () => {
     setBusy(true); setError(''); setResult(null)
     try {
-      const data = await window.vbfDesktop.analyze({ input, outputDir, n: Number(n), m: Number(m), radix, transpose, metrics: [...metrics], ddt, lat })
+      const data = await window.vbfDesktop.analyze({ input, outputDir, n: Number(n), m: Number(m), kind, radix, transpose, metrics: [...metrics], ddt, lat })
       if (!data.ok) setError(data.error || '计算失败。')
       else setResult(data)
     } catch (e) { setError(e.message || String(e)) }
@@ -74,20 +75,21 @@ export default function MultiOutput() {
     <main className="main">
       <header className="topbar"><span>工作台 <b>/</b> 多输出布尔函数</span><span className="local-dot">● 本地模式</span></header>
       <div className="content">
-        <div className="heading"><div><div className="eyebrow">CRYPTOGRAPHIC FUNCTION ANALYSIS</div><h1>多输出布尔函数安全性分析</h1><p>从向量真值表导入 S 盒，分别分析差分分布与线性近似。</p></div><div className="heading-symbol">F<span>₂ⁿ → F₂ᵐ</span></div></div>
-        <div className="step"><span>01</span><div><h2>导入函数</h2><p>{transpose ? '每行一个坐标函数，行内按输入 0 到 2ⁿ−1 排列' : '输出词按输入 0 到 2ⁿ−1 的顺序排列'}</p></div></div>
+        <div className="heading"><div><div className="eyebrow">CRYPTOGRAPHIC FUNCTION ANALYSIS</div><h1>多输出布尔函数安全性分析</h1><p>从真值表或坐标 ANF 导入 S 盒，分别分析差分分布与线性近似。</p></div><div className="heading-symbol">F<span>₂ⁿ → F₂ᵐ</span></div></div>
+        <div className="step"><span>01</span><div><h2>导入函数</h2><p>{kind === 'anf' ? '按 f1 至 fm 导入坐标 ANF' : transpose ? '每行一个坐标函数，行内按输入 0 到 2ⁿ−1 排列' : '输出词按输入 0 到 2ⁿ−1 的顺序排列，或导入坐标 ANF'}</p></div></div>
         <section className="surface input-surface">
           <div className={`dropzone ${input ? 'filled' : ''}`} onDragOver={e => e.preventDefault()} onDrop={dropInput}>
-            <div className="drop-icon">⇧</div><div className="drop-copy"><strong>{input ? baseName(input) : '拖入 TXT 文件或点击浏览'}</strong><small>{input || (transpose ? '每行一个坐标函数，按 f1 至 fm 排列' : '每个输出词可按空格、逗号或换行分隔；也支持连续定宽串')}</small></div><button type="button" onClick={chooseInput}>{input ? '更换文件' : '浏览文件'}</button>
+            <div className="drop-icon">⇧</div><div className="drop-copy"><strong>{input ? baseName(input) : '拖入 TXT 文件或点击浏览'}</strong><small>{input || (kind === 'anf' ? '首行声明 n、m，后续为 f1 至 fm 的 ANF' : transpose ? '每行一个坐标函数，按 f1 至 fm 排列' : '支持真值表及坐标 ANF')}</small></div><button type="button" onClick={chooseInput}>{input ? '更换文件' : '浏览文件'}</button>
           </div>
+          <label className="input-type">输入类型 <select value={kind} onChange={e => { setKind(e.target.value); if (e.target.value === 'anf') setTranspose(false); setResult(null); setError('') }}><option value="auto">自动识别</option><option value="truth">真值表</option><option value="anf">代数正规型 ANF</option></select></label>
           <div className="settings">
             <label>输入位数 n<input type="number" min="1" max="12" value={n} onChange={e => { setN(e.target.value); if (Number(m) > Number(e.target.value)) setM(e.target.value) }} /></label>
             <label>输出位数 m<input type="number" min="1" max="8" value={m} onChange={e => setM(e.target.value)} /></label>
-            <label>真值表进制<select value={radix} onChange={e => setRadix(e.target.value)}><option value="hex">十六进制</option><option value="bin">二进制</option></select></label>
+            <label>真值表进制<select value={radix} disabled={kind === 'anf'} onChange={e => setRadix(e.target.value)}><option value="hex">十六进制</option><option value="bin">二进制</option></select></label>
             <label>输出位置<button type="button" className="folder" onClick={async () => { const p = await window.vbfDesktop.pickOutput(); if (p) setOutputDir(p) }}>{outputDir ? baseName(outputDir) : '默认输入文件旁'}</button></label>
           </div>
-          <label className="transpose-option"><input type="checkbox" checked={transpose} onChange={e => { setTranspose(e.target.checked); setResult(null); setError('') }} /><span><strong>转置真值表</strong><small>文件按 f1 到 fm 逐行存放；每行包含 2ⁿ 个输入位置的 0/1 值，或将该行位串按四位一组写成十六进制。</small></span></label>
-          <p className="hint">{transpose ? <>转置示例（4×4 PRESENT，十六进制）：四行分别为 <code>9B70</code>、<code>E16C</code>、<code>32E5</code>、<code>59A6</code>。保留行首 0；转置后仍导出标准逐词真值表。</> : <>例如 4×4 PRESENT S 盒：<code>C 5 6 B 9 0 A D 3 E F 8 4 7 1 2</code>。十六进制输出词宽度为 ⌈m/4⌉ 位；二进制为 m 位。</>}</p>
+          <label className="transpose-option"><input type="checkbox" disabled={kind === 'anf'} checked={transpose} onChange={e => { setTranspose(e.target.checked); setResult(null); setError('') }} /><span><strong>转置真值表</strong><small>文件按 f1 到 fm 逐行存放；每行包含 2ⁿ 个输入位置的 0/1 值，或将该行位串按四位一组写成十六进制。ANF 无须转置。</small></span></label>
+          <p className="hint">{kind === 'anf' ? <>ANF 首行写 <code>n=4; m=4</code>，后续写 <code>f1 = 1 + x4 + ...</code> 至 <code>f4 = ...</code>。界面 n、m 须与文件一致；<code>+</code> 表示异或。</> : transpose ? <>转置示例（4×4 PRESENT，十六进制）：四行分别为 <code>9B70</code>、<code>E16C</code>、<code>32E5</code>、<code>59A6</code>。保留行首 0；转置后仍导出标准逐词真值表。</> : <>例如 4×4 PRESENT S 盒：<code>C 5 6 B 9 0 A D 3 E F 8 4 7 1 2</code>。也可导入 <code>n=4; m=4</code> 开头的坐标 ANF。</>}</p>
         </section>
         <div className="step step-two"><span>02</span><div><h2>选择指标</h2><p>勾选后按需运行；标准化真值表与坐标 ANF 始终导出</p></div><div className="selection">已选 {count} 项 <button onClick={() => setMetrics(new Set(ids))}>全选</button><button onClick={() => setMetrics(new Set())}>清空</button></div></div>
         <div className="groups">{groups.map(group => <section className="surface metric-group" key={group.title}><div className="group-head"><div><h3>{group.title}</h3><p>{group.subtitle}</p></div><span>{group.items.length} 项</span></div><div className="tiles">{group.items.map(item => <MetricTile key={item[0]} item={item} active={metrics.has(item[0])} onClick={toggle} />)}</div></section>)}</div>

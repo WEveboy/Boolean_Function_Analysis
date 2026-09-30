@@ -95,7 +95,7 @@ def decorate(canvas, doc):
     canvas.line(17 * mm, 18 * mm, width - 17 * mm, 18 * mm)
     canvas.setFont("Deng", 8)
     canvas.setFillColor(MUTED)
-    canvas.drawString(17 * mm, 12.5 * mm, "布尔函数安全性分析 · v2.0.0")
+    canvas.drawString(17 * mm, 12.5 * mm, "布尔函数安全性分析 · v2.1.0")
     canvas.drawRightString(width - 17 * mm, 12.5 * mm, str(doc.page))
     canvas.restoreState()
 
@@ -139,28 +139,30 @@ single = [
 multi = [
     p("USER GUIDE  /  MULTI OUTPUT", "eyebrow"),
     p("多输出布尔函数 · 使用说明", "title"),
-    p("导入向量函数或 S 盒的真值表，按需计算安全性指标、导出 DDT 和 LAT。", "subtitle"),
+    p("导入向量真值表或坐标 ANF，按需计算安全性指标、导出 DDT 和 LAT。", "subtitle"),
     HRFlowable(width="100%", thickness=0.8, color=LINE),
     section("01  选择范例和导入设置"),
-    p("运行 Windows 便携版 EXE，在左侧选择“多输出布尔函数”。在导入区拖入 TXT 或点击“浏览文件”。下列四份文件表示同一个 PRESENT 4×4 S 盒：输入位数 n=4、输出位数 m=4。"),
-    table(["范例 TXT", "进制", "转置真值表"], [
+    p("运行 Windows 便携版 EXE，在左侧选择“多输出布尔函数”。拖入 TXT 或点击“浏览文件”。下列五份文件均表示 PRESENT 4×4 S 盒：输入位数 n=4、输出位数 m=4；输入类型选“自动识别”。"),
+    table(["范例 TXT", "进制 / 类型", "转置真值表"], [
         ("PRESENT_4x4_truth_hex.txt", "十六进制", "不勾选"),
         ("PRESENT_4x4_truth_binary.txt", "二进制", "不勾选"),
         ("PRESENT_4x4_transposed_hex.txt", "十六进制", "勾选"),
         ("PRESENT_4x4_transposed_binary.txt", "二进制", "勾选"),
+        ("PRESENT_4x4_ANF.txt", "ANF", "不勾选"),
     ], [106 * mm, 35 * mm, 35 * mm]),
-    section("02  理解两种真值表"),
+    section("02  理解真值表与坐标 ANF"),
     p("普通格式按 x=0、1、…、15 的顺序给出 16 个输出词，x1 和 f1 为最高位。十六进制范例为："),
     code(["C 5 6 B 9 0 A D 3 E F 8 4 7 1 2"]),
     Spacer(1, 5),
     p("转置格式每行对应一个坐标函数，依次为 f1、f2、f3、f4；行内仍按 x=0、1、…、15 排列。转置十六进制范例为："),
     code(["9B70", "E16C", "32E5", "59A6"]),
+    Spacer(1, 5),
+    p("ANF 首行写 n=4; m=4，之后依次写 f1 = ... 至 f4 = ...。+ 表示异或，* 表示变量乘积；界面中的 n、m 须与首行一致。ANF 无须选择进制或转置。"),
     section("03  选择指标并运行"),
     p("勾选所需指标；如需完整表，另勾选“差分分布表 DDT.csv”或“线性近似表 LAT.csv”。点击“开始分析”。“输出位置”留空时，文件写入输入文件旁的 vbf_output 文件夹。"),
     section("04  查看导出文件"),
-    p("指标值显示在页面。无论是否勾选指标，都会生成标准化 Truth_table.txt 和坐标函数 ANF.txt；只有主动勾选完整表时才生成 DDT.csv / LAT.csv。四份范例的结果应一致。目标目录非空时，程序新建 run-2、run-3 等子目录。"),
-    p("TXT 使用 UTF-8，不能含注释。普通格式须有 2^n 个定宽输出词：二进制每词 m 位，十六进制每词 ceil(m/4) 位。转置格式须有 m 行，每行 2^n 个输出位。多输出页面只接受真值表，不接受 ANF 作为输入。", "small"),
+    p("指标显示在页面。始终生成标准化 Truth_table.txt 和坐标 ANF.txt；主动勾选完整表时生成 DDT.csv / LAT.csv。五份范例的结果应一致。目标目录非空时会新建 run-2、run-3 等子目录。TXT 使用 UTF-8，不含注释。"),
 ]
 
-build("单输出布尔函数使用说明.pdf", single)
-build("多输出布尔函数使用说明.pdf", multi)
+build("单输出布尔函数使用说明-v2.1.0.pdf", single)
+build("多输出布尔函数使用说明-v2.1.0.pdf", multi)

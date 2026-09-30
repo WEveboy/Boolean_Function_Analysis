@@ -118,6 +118,37 @@ class CoreTests(unittest.TestCase):
         truth = next(Path(p) for p in data["files"] if Path(p).name == "Truth_table.txt")
         self.assertIn("1100", truth.read_text(encoding="utf-8"))
 
+    def test_present_coordinate_anf_matches_truth_table(self):
+        source = ROOT.parent / "examples" / "multi-output" / "PRESENT_4x4_ANF.txt"
+        metrics = ["balance", "max_degree", "nonlinearity", "diff_uniformity", "linearity"]
+        expected = self.run_core(PRESENT, 4, 4, metrics, ddt=True, lat=True)
+        actual_out = self.folder / "anf-results"
+        done = subprocess.run(
+            [str(CORE), "--input", str(source), "--n", "4", "--m", "4",
+             "--kind", "auto", "--radix", "hex", "--metrics", ",".join(metrics),
+             "--ddt", "--lat", "--out", str(actual_out)],
+            capture_output=True, encoding="utf-8", timeout=120,
+        )
+        self.assertEqual(done.returncode, 0, done.stdout)
+        actual = json.loads(done.stdout)
+        self.assertTrue(actual["ok"], actual.get("error"))
+        self.assertEqual(actual["input"]["kind"], "anf")
+        self.assertEqual(self.results(actual), self.results(expected))
+        self.assertEqual(
+            {Path(path).name: Path(path).read_bytes() for path in actual["files"]},
+            {Path(path).name: Path(path).read_bytes() for path in expected["files"]},
+        )
+
+        malformed = source.read_text(encoding="utf-8").replace("f4 =", "f3 =")
+        bad_source = self.folder / "bad-anf.txt"
+        bad_source.write_text(malformed, encoding="utf-8")
+        bad = subprocess.run(
+            [str(CORE), "--input", str(bad_source), "--n", "4", "--m", "4", "--kind", "anf"],
+            capture_output=True, encoding="utf-8", timeout=120,
+        )
+        self.assertNotEqual(bad.returncode, 0)
+        self.assertIn("重复", json.loads(bad.stdout)["error"])
+
     def test_identity_and_single_request_independence(self):
         values = list(range(8))
         data = self.run_core(values, 3, 3, ["linearity"], radix="bin")

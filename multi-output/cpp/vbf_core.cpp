@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <algorithm>
 #include <bit>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <filesystem>
@@ -90,6 +91,95 @@ static std::vector<std::string> tokenize(const std::string& text) {
     std::vector<std::string> tokens;
     for (std::string s; in >> s;) tokens.push_back(s);
     return tokens;
+}
+static std::vector<std::uint8_t> mobius(std::vector<std::uint8_t> a, int n);
+static std::string compact_anf_line(const std::string& line) {
+    std::string compact;
+    for (unsigned char c : line) if (c != ' ' && c != '\t' && c != '\r' && c != '\n') compact += char(c);
+    return compact;
+}
+static bool looks_like_anf(const fs::path& path) {
+    std::istringstream input(read_file(path));
+    for (std::string line; std::getline(input, line);) {
+        std::string clean = compact_anf_line(line);
+        if (clean.empty() || clean.rfind("n=", 0) == 0) continue;
+        return clean.size() > 2 && (clean[0] == 'f' || clean[0] == 'F') &&
+            std::isdigit((unsigned char)clean[1]) && clean.find('=') != std::string::npos;
+    }
+    return false;
+}
+static Function load_anf_function(const fs::path& path, int n_arg, int m_arg) {
+    std::istringstream input(read_file(path));
+    std::string line, header;
+    while (std::getline(input, line)) {
+        header = compact_anf_line(line);
+        if (!header.empty()) break;
+    }
+    if (header.rfind("n=", 0) != 0) throw std::runtime_error("多输出 ANF 首行须写 n=<输入位数>; m=<输出位数>。");
+    size_t semicolon = header.find(';');
+    if (semicolon == std::string::npos || header.compare(semicolon + 1, 2, "m=") != 0)
+        throw std::runtime_error("多输出 ANF 首行须写 n=<输入位数>; m=<输出位数>。");
+    std::string m_text = header.substr(semicolon + 3);
+    if (!m_text.empty() && m_text.back() == ';') m_text.pop_back();
+    int n = positive_int(header.substr(2, semicolon - 2), "n");
+    int m = positive_int(m_text, "m");
+    if (n < 1 || n > 12 || m < 1 || m > std::min(n, 8))
+        throw std::runtime_error("ANF 要求 1≤n≤12、1≤m≤min(n,8)。");
+    if ((n_arg && n_arg != n) || (m_arg && m_arg != m))
+        throw std::runtime_error("界面中的 n、m 与 ANF 文件首行声明不一致。");
+    const size_t count = size_t(1) << n;
+    Function f{n, m, std::vector<U>(count, 0), path};
+    std::vector<bool> seen(m, false);
+    for (; std::getline(input, line);) {
+        std::string clean = compact_anf_line(line);
+        if (clean.empty()) continue;
+        if (clean[0] != 'f' && clean[0] != 'F') throw std::runtime_error("ANF 坐标行须写成 f1 = 表达式。");
+        size_t pos = 1;
+        while (pos < clean.size() && std::isdigit((unsigned char)clean[pos])) ++pos;
+        if (pos == 1 || pos >= clean.size() || clean[pos] != '=') throw std::runtime_error("ANF 坐标行须写成 f1 = 表达式。");
+        int index = positive_int(clean.substr(1, pos - 1), "坐标下标");
+        if (index > m) throw std::runtime_error("ANF 坐标下标超过 m。");
+        if (seen[index - 1]) throw std::runtime_error("ANF 中的 f" + std::to_string(index) + " 重复。");
+        seen[index - 1] = true;
+        std::string expr = clean.substr(pos + 1);
+        const std::string xor_sign = "\xE2\x8A\x95";
+        for (size_t at = 0; (at = expr.find(xor_sign, at)) != std::string::npos;) expr.replace(at, xor_sign.size(), "+");
+        if (expr.empty()) throw std::runtime_error("ANF 的 f" + std::to_string(index) + " 表达式为空。");
+        std::vector<std::uint8_t> coefficients(count, 0);
+        size_t start = 0;
+        while (start < expr.size()) {
+            size_t end = expr.find('+', start);
+            if (end == std::string::npos) end = expr.size();
+            if (end == start) throw std::runtime_error("ANF 的 f" + std::to_string(index) + " 出现空项或连续加号。");
+            std::string term = expr.substr(start, end - start);
+            if (term == "1") coefficients[0] ^= 1;
+            else if (term != "0") {
+                U mask = 0;
+                size_t cursor = 0;
+                while (cursor < term.size()) {
+                    if (term[cursor] != 'x' && term[cursor] != 'X') throw std::runtime_error("ANF 单项式语法错误：" + term);
+                    size_t digit_start = ++cursor;
+                    while (cursor < term.size() && std::isdigit((unsigned char)term[cursor])) ++cursor;
+                    if (cursor == digit_start) throw std::runtime_error("ANF 变量缺少下标：" + term);
+                    int variable = positive_int(term.substr(digit_start, cursor - digit_start), "变量下标");
+                    if (variable > n) throw std::runtime_error("ANF 变量下标超过 n。");
+                    mask |= U(1) << (n - variable);
+                    if (cursor < term.size() && term[cursor] == '*') {
+                        ++cursor;
+                        if (cursor == term.size()) throw std::runtime_error("ANF 单项式末尾不能是乘号。");
+                    }
+                }
+                coefficients[mask] ^= 1;
+            }
+            if (end == expr.size()) break;
+            start = end + 1;
+            if (start == expr.size()) throw std::runtime_error("ANF 表达式不能以加号结尾。");
+        }
+        auto coordinate = mobius(std::move(coefficients), n);
+        for (size_t x = 0; x < count; ++x) f.truth[x] |= U(coordinate[x]) << (m - index);
+    }
+    for (int i = 0; i < m; ++i) if (!seen[i]) throw std::runtime_error("ANF 缺少坐标函数 f" + std::to_string(i + 1) + "。");
+    return f;
 }
 static Function load_function(const fs::path& path, int n_arg, int m_arg, const std::string& radix) {
     if (radix != "bin" && radix != "hex") throw std::runtime_error("输入进制必须为 bin 或 hex。");
@@ -346,7 +436,7 @@ int wmain(int argc, wchar_t** argv) {
     try {
         fs::path input, output;
         int n_arg = 0, m_arg = 0;
-        std::string radix = "hex", metrics_csv;
+        std::string radix = "hex", kind = "auto", metrics_csv;
         bool want_ddt = false, want_lat = false, transpose = false;
         for (int i = 1; i < argc; ++i) {
             std::wstring key = argv[i];
@@ -360,12 +450,18 @@ int wmain(int argc, wchar_t** argv) {
             else if (key == L"--n") n_arg = positive_int(utf8(value), "n");
             else if (key == L"--m") m_arg = positive_int(utf8(value), "m");
             else if (key == L"--radix") radix = utf8(value);
+            else if (key == L"--kind") kind = utf8(value);
             else if (key == L"--metrics") metrics_csv = utf8(value);
             else throw std::runtime_error("未知命令行参数：" + utf8(key));
         }
         if (input.empty()) throw std::runtime_error("缺少输入 TXT 文件。");
+        if (kind != "auto" && kind != "truth" && kind != "anf") throw std::runtime_error("输入类型无效。");
         auto metrics = parse_metrics(metrics_csv);
-        Function f = transpose ? load_transposed_function(input, n_arg, m_arg, radix) : load_function(input, n_arg, m_arg, radix);
+        if (kind == "auto") kind = looks_like_anf(input) ? "anf" : "truth";
+        if (kind == "truth" && looks_like_anf(input)) throw std::runtime_error("文件含 ANF 坐标函数，不能按真值表读取。");
+        const bool effective_transpose = transpose && kind != "anf";
+        Function f = kind == "anf" ? load_anf_function(input, n_arg, m_arg) :
+            effective_transpose ? load_transposed_function(input, n_arg, m_arg, radix) : load_function(input, n_arg, m_arg, radix);
         Session session(f);
         const U N = U(f.truth.size()), M = U(1) << f.m;
         const Count expected = N / M;
@@ -450,7 +546,7 @@ int wmain(int argc, wchar_t** argv) {
         if ((want_ddt || want_lat) && std::uint64_t(N)*M > 131072) throw std::runtime_error("完整 DDT/LAT 超过 131072 个单元上限；可只选摘要指标。");
         auto files = export_results(f,session,output,want_ddt,want_lat);
         std::string joined = "["; for (size_t i = 0; i < results.size(); ++i) { if (i) joined += ','; joined += result_json(results[i]); } joined += ']';
-        std::cout << "{\"ok\":true,\"input\":{\"name\":" << json_string(utf8(input.filename().wstring())) << ",\"n\":" << f.n << ",\"m\":" << f.m << ",\"transposed\":" << (transpose?"true":"false") << ",\"permutation\":" << (f.permutation()?"true":"false") << "},\"files\":" << paths_json(files) << ",\"results\":" << joined << "}\n";
+        std::cout << "{\"ok\":true,\"input\":{\"name\":" << json_string(utf8(input.filename().wstring())) << ",\"n\":" << f.n << ",\"m\":" << f.m << ",\"kind\":" << json_string(kind) << ",\"transposed\":" << (effective_transpose?"true":"false") << ",\"permutation\":" << (f.permutation()?"true":"false") << "},\"files\":" << paths_json(files) << ",\"results\":" << joined << "}\n";
         return 0;
     } catch (const std::exception& e) {
         std::cout << "{\"ok\":false,\"error\":" << json_string(e.what()) << "}\n";

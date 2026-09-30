@@ -1,6 +1,6 @@
 {
   "name": "boolean-function-lab",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "单输出与多输出布尔函数安全性指标分析",
   "author": "Boolean Function Lab",

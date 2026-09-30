@@ -160,9 +160,10 @@ app.whenReady().then(() => {
       if (typeof request?.input !== 'string' || !request.input.toLowerCase().endsWith('.txt') || !fs.existsSync(request.input)) throw new Error('请选择有效的 TXT 输入文件。')
       const n = Number(request.n), m = Number(request.m)
       if (!Number.isInteger(n) || n < 1 || n > 12 || !Number.isInteger(m) || m < 1 || m > Math.min(n, 8)) throw new Error('输入位数 n 须为 1–12，输出位数 m 须为 1–min(n,8)。')
+      const kind = ['auto', 'truth', 'anf'].includes(request.kind) ? request.kind : 'auto'
       if (!['bin', 'hex'].includes(request.radix)) throw new Error('请选择输入进制。')
       const metrics = Array.isArray(request.metrics) ? request.metrics.filter(id => allowedVectorMetrics.has(id)) : []
-      const args = ['--input', request.input, '--n', String(n), '--m', String(m), '--radix', request.radix, '--metrics', metrics.join(',')]
+      const args = ['--input', request.input, '--n', String(n), '--m', String(m), '--kind', kind, '--radix', request.radix, '--metrics', metrics.join(',')]
       if (request.transpose) args.push('--transpose')
       if (request.ddt) args.push('--ddt')
       if (request.lat) args.push('--lat')

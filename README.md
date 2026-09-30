@@ -4,9 +4,9 @@ Windows 桌面软件：侧边栏可切换「单输出布尔函数」和「多输
 
 ## 直接使用
 
-双击 `BooleanFunctionLab-2.0.0-portable.exe`。程序为 Windows x64 便携版，无需单独安装 Node.js、React 或 C++ 编译器。先在侧边栏选择分析类型。单输出页面内仍可选择「单函数分析」或「双函数互相关」；多输出页面可分析向量函数与 S 盒，并按需导出 DDT / LAT 完整表。拖入 TXT，也可点击「浏览」，勾选指标后按「开始分析」。
+双击 `BooleanFunctionLab-2.1.0-portable.exe`。程序为 Windows x64 便携版，无需单独安装 Node.js、React 或 C++ 编译器。先在侧边栏选择分析类型。单输出页面内仍可选择「单函数分析」或「双函数互相关」；多输出页面可分析向量函数与 S 盒，并按需导出 DDT / LAT 完整表。两个页面均可导入对应格式的真值表或 ANF TXT。拖入 TXT，也可点击「浏览」，勾选指标后按「开始分析」。
 
-单输出结果默认保存到输入文件旁的 `bf_output`，多输出结果默认保存到 `vbf_output`；两个页面都可以另选文件夹。可直接导入的单输出与多输出 TXT 文件及对应设置见 [范例文件夹](examples/README.md)。图文简明手册可下载 [单输出使用说明 PDF](output/pdf/单输出布尔函数使用说明.pdf) 和 [多输出使用说明 PDF](output/pdf/多输出布尔函数使用说明.pdf)。多输出输入格式、转置真值表和指标说明见 [多输出使用说明](multi-output/README.md)。
+单输出结果默认保存到输入文件旁的 `bf_output`，多输出结果默认保存到 `vbf_output`；两个页面都可以另选文件夹。可直接导入的单输出与多输出 TXT 文件及对应设置见 [范例文件夹](examples/README.md)。图文简明手册可下载 [单输出使用说明 PDF](output/pdf/单输出布尔函数使用说明-v2.1.0.pdf) 和 [多输出使用说明 PDF](output/pdf/多输出布尔函数使用说明-v2.1.0.pdf)。多输出真值表、坐标 ANF 和指标说明见 [多输出使用说明](multi-output/README.md)。
 
 单输出分析每次生成以下两个文件，顺序固定：
 
