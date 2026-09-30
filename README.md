@@ -6,7 +6,7 @@ Windows 桌面软件：侧边栏可切换「单输出布尔函数」和「多输
 
 双击 `BooleanFunctionLab-2.0.0-portable.exe`。程序为 Windows x64 便携版，无需单独安装 Node.js、React 或 C++ 编译器。先在侧边栏选择分析类型。单输出页面内仍可选择「单函数分析」或「双函数互相关」；多输出页面可分析向量函数与 S 盒，并按需导出 DDT / LAT 完整表。拖入 TXT，也可点击「浏览」，勾选指标后按「开始分析」。
 
-单输出结果默认保存到输入文件旁的 `bf_output`，多输出结果默认保存到 `vbf_output`；两个页面都可以另选文件夹。多输出输入格式、转置真值表和指标说明见 [多输出使用说明](multi-output/README.md)。
+单输出结果默认保存到输入文件旁的 `bf_output`，多输出结果默认保存到 `vbf_output`；两个页面都可以另选文件夹。可直接导入的单输出与多输出 TXT 文件及对应设置见 [范例文件夹](examples/README.md)。多输出输入格式、转置真值表和指标说明见 [多输出使用说明](multi-output/README.md)。
 
 单输出分析每次生成以下两个文件，顺序固定：
 
@@ -52,6 +52,7 @@ multi-output/cpp/
   build.ps1               多输出引擎构建脚本
 tests/test_core.py        独立数学参考实现与端到端检查
 tests/fixtures/anf_user_style.txt  用户提供的 ANF 格式回归样例
+examples/                 两类 TXT 可导入范例与设置说明
 scripts/create_icon.py    图标生成脚本（需要 Pillow）
 scripts/make_release.py  源码包与 SHA-256 清单生成脚本
 C++功能实现文件大纲.md       算法与接口设计说明
