@@ -1,0 +1,11 @@
+.pnpm-store/
+app/node_modules/
+app/dist/
+dist/
+cpp/build/
+tmp-tests/
+*.obj
+__pycache__/
+*.pyc
+**/bf_output/
+**/vbf_output/

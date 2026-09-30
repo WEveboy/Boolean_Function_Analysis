@@ -1,0 +1,7 @@
+app/node_modules/
+app/dist/
+cpp/build/
+dist/
+__pycache__/
+*.pyc
+*.obj
