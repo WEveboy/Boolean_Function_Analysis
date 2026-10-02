@@ -12,11 +12,13 @@ VERSION = json.loads((ROOT / "app" / "package.json").read_text(encoding="utf-8")
 EXE = DIST / f"BooleanFunctionLab-{VERSION}-portable.exe"
 SOURCE = DIST / f"BooleanFunctionLab-{VERSION}-source.zip"
 FILES = [
+    "AGENTS.md",
     ".gitignore",
     "README.md",
     ".github/workflows/ci.yml",
     "docs/USER_GUIDE.md",
     "docs/DEVELOPMENT.md",
+    "docs/UPLOAD_WORKFLOW.md",
     "docs/images/single-output.png",
     "docs/images/multi-output.png",
     "docs/design/单输出布尔函数_C++功能实现文件大纲.md",

@@ -44,6 +44,7 @@
 - [使用说明](docs/USER_GUIDE.md)：输入格式、输出文件、范围与常见问题。
 - [多输出指标说明](multi-output/README.md)：坐标函数、DDT／LAT 和算法约定。
 - [开发与构建](docs/DEVELOPMENT.md)：目录结构、编译、测试和发布包。
+- [GitHub 更新与发布流程](docs/UPLOAD_WORKFLOW.md)：文件筛选、验证、上传及 EXE 发布核对。
 - [单输出 C++ 设计大纲](docs/design/单输出布尔函数_C++功能实现文件大纲.md) · [多输出 C++ 设计大纲](docs/design/多输出布尔函数_C++功能实现文件大纲.md) · [指标思维导图](docs/design/)。
 
 `main` 分支保存持续更新的源码；[v2.1.0 Release](https://github.com/WEveboy/Boolean_Function_Analysis/releases/tag/v2.1.0) 中的 EXE 与源码 ZIP 是该版本发布时的快照。发布包附带 `SHA256SUMS.txt`，可用于核对下载文件。
