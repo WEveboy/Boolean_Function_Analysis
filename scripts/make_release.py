@@ -14,6 +14,15 @@ SOURCE = DIST / f"BooleanFunctionLab-{VERSION}-source.zip"
 FILES = [
     ".gitignore",
     "README.md",
+    ".github/workflows/ci.yml",
+    "docs/USER_GUIDE.md",
+    "docs/DEVELOPMENT.md",
+    "docs/images/single-output.png",
+    "docs/images/multi-output.png",
+    "docs/design/单输出布尔函数_C++功能实现文件大纲.md",
+    "docs/design/多输出布尔函数_C++功能实现文件大纲.md",
+    "docs/design/单输出布尔函数安全性指标.xmind",
+    "docs/design/多输出布尔函数安全性指标.xmind",
     "examples/README.md",
     "examples/single-output/quadratic_4var_truth_binary.txt",
     "examples/single-output/quadratic_4var_truth_hex.txt",
@@ -25,9 +34,6 @@ FILES = [
     "examples/multi-output/PRESENT_4x4_ANF.txt",
     "output/pdf/单输出布尔函数使用说明-v2.1.0.pdf",
     "output/pdf/多输出布尔函数使用说明-v2.1.0.pdf",
-    "C++功能实现文件大纲.md",
-    "单输出布尔函数安全性指标.xmind",
-    "build_xmind.py",
     "cpp/bf_core.cpp",
     "cpp/build.ps1",
     "app/package.json",
@@ -47,6 +53,7 @@ FILES = [
     "tests/fixtures/anf_user_style.txt",
     "scripts/create_icon.py",
     "scripts/create_user_guides.py",
+    "scripts/build_single_output_xmind.py",
     "scripts/build_multi_output_xmind.py",
     "scripts/make_release.py",
     "multi-output/.gitignore",
@@ -55,8 +62,6 @@ FILES = [
     "multi-output/cpp/build.ps1",
     "multi-output/tests/test_core.py",
     "multi-output/tests/fixtures/present.txt",
-    "多输出布尔函数_C++功能实现文件大纲.md",
-    "多输出布尔函数安全性指标.xmind",
 ]
 
 

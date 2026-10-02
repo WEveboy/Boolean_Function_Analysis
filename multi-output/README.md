@@ -92,4 +92,4 @@ examples/multi-output/          PRESENT 4×4 的真值表与 ANF 范例
 scripts/make_release.py         完整源码包与 SHA-256 清单
 ```
 
-源代码包同时附有工作区中的多输出 XMind 导图及 C++ 功能实现大纲，便于继续扩展。EXE 未做代码签名，首次运行可能显示 Windows 发布者提示。
+进一步的设计资料见 [多输出 XMind 导图](../docs/design/多输出布尔函数安全性指标.xmind) 和 [C++ 功能实现大纲](../docs/design/多输出布尔函数_C++功能实现文件大纲.md)。EXE 未做代码签名，首次运行可能显示 Windows 发布者提示。

@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "多输出布尔函数安全性指标.xmind"
+OUT = ROOT / "docs" / "design" / "多输出布尔函数安全性指标.xmind"
 
 
 def topic(title: str, pages: str = "", detail: str = "", children: list | None = None) -> dict:

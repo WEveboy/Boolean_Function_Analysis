@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 
-OUT = Path(__file__).with_name("单输出布尔函数安全性指标.xmind")
+OUT = Path(__file__).resolve().parents[1] / "docs" / "design" / "单输出布尔函数安全性指标.xmind"
 
 
 def topic(title: str, page: str = "", detail: str = "", children: list | None = None) -> dict:

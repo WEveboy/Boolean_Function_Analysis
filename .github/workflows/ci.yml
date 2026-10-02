@@ -1,0 +1,47 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile C++ engines
+        shell: pwsh
+        run: |
+          ./cpp/build.ps1
+          ./multi-output/cpp/build.ps1
+
+      - name: Run core tests
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tests -v
+          python -m unittest discover -s multi-output/tests -v
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.25.0
+
+      - name: Install frontend dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: app
+        run: pnpm run build:web
