@@ -1,6 +1,6 @@
 # 多输出布尔函数安全性分析
 
-多输出功能现已集成到项目根目录 `app/` 的统一 Windows x64 桌面程序中，通过左侧「多输出布尔函数」进入。此目录保留原独立版本的源码、示例和测试。React 提供本地交互界面，Electron 负责文件选择和运行独立 C++ 引擎。分析输入不会上传。用户可以只勾选需要的指标；S 盒差分分布表 DDT、线性近似表 LAT 分别勾选导出。
+多输出功能现已集成到项目根目录 `app/` 的统一 Windows x64 桌面程序中，通过左侧「多输出布尔函数」进入。此目录保留多输出 C++ 引擎和测试；可导入范例统一放在根目录 `examples/multi-output/`。React 提供本地交互界面，Electron 负责文件选择和运行 C++ 引擎。分析输入不会上传。用户可以只勾选需要的指标；S 盒差分分布表 DDT、线性近似表 LAT 分别勾选导出。
 
 ## 直接使用
 
@@ -14,7 +14,7 @@
 C 5 6 B 9 0 A D 3 E F 8 4 7 1 2
 ```
 
-`examples/PRESENT_4x4_truth_hex.txt` 和 `examples/PRESENT_4x4_truth_binary.txt` 是可直接导入的同一函数真值表；分别选择十六进制或二进制。`examples/PRESENT_4x4_ANF_reference.txt` 是同一函数的四个坐标 ANF，现可直接导入并分析。根目录的 `examples/multi-output/PRESENT_4x4_ANF.txt` 是同一可导入范例。
+根目录的 `examples/multi-output/PRESENT_4x4_truth_hex.txt` 和 `examples/multi-output/PRESENT_4x4_truth_binary.txt` 是可直接导入的同一函数真值表；分别选择十六进制或二进制。`examples/multi-output/PRESENT_4x4_ANF.txt` 是同一函数的四个坐标 ANF，可直接导入并分析。
 
 坐标 ANF 首行须为 `n=4; m=4`（数字按实际维数填写）；随后分别写 `f1 = ...` 至 `fm = ...`，每个坐标函数恰好出现一次。`+` 或 `⊕` 表示异或，`*` 可省略，支持常数 `0`、`1`。界面中的 `n`、`m` 必须与首行一致，输入类型可选「自动识别」或「代数正规型 ANF」。ANF 输入的进制及转置选项不参与解析。解析后与真值表走相同的指标、DDT/LAT 和导出流程。
 
@@ -29,7 +29,7 @@ E16C
 59A6
 ```
 
-`examples/PRESENT_4x4_transposed_hex.txt` 和 `examples/PRESENT_4x4_transposed_binary.txt` 可直接导入；它们与上述逐词真值表应生成完全相同的 ANF、DDT 和 LAT。
+根目录的 `examples/multi-output/PRESENT_4x4_transposed_hex.txt` 和 `examples/multi-output/PRESENT_4x4_transposed_binary.txt` 可直接导入；它们与上述逐词真值表应生成完全相同的 ANF、DDT 和 LAT。
 
 8×8 S 盒的每个十六进制输出词须为两位，如 `00`、`A7`。输出位数不是四的倍数时，可用 `m` 位二进制词，也可用足够宽的十六进制词，超出 `m` 位的高位必须为 0。
 
@@ -52,46 +52,44 @@ E16C
 
 ## 从源代码构建
 
-需要 Windows x64、Visual Studio 2022 C++ 工具集、Node.js 和 pnpm。在项目目录运行：
+需要 Windows x64、Visual Studio 2022 C++ 工具集、Node.js 和 pnpm。在项目根目录运行：
 
 ```powershell
 ./cpp/build.ps1
+./multi-output/cpp/build.ps1
 cd app
 pnpm install
 pnpm run build:web
-.\node_modules\.bin\electron-builder.CMD --win portable --x64
+pnpm exec electron-builder --win portable --x64
 ```
 
 构建后的便携版位于 `dist/`。若 pnpm 提示忽略 Electron 安装脚本，请先允许该脚本并确认 `app/node_modules/electron/dist/electron.exe` 存在。C++ 后端可独立调用：
 
 ```powershell
-./cpp/build/vbf-core.exe --input tests/fixtures/present.txt --n 4 --m 4 --radix hex --metrics balance,nonlinearity,diff_uniformity,linearity --ddt --lat --out results
+./multi-output/cpp/build/vbf-core.exe --input examples/multi-output/PRESENT_4x4_truth_hex.txt --n 4 --m 4 --radix hex --metrics balance,nonlinearity,diff_uniformity,linearity --ddt --lat --out results
 ```
 
 转置输入在命令行中加 `--transpose`，例如：
 
 ```powershell
-./cpp/build/vbf-core.exe --input examples/PRESENT_4x4_transposed_hex.txt --n 4 --m 4 --radix hex --transpose --metrics diff_uniformity,linearity --ddt --lat --out results
+./multi-output/cpp/build/vbf-core.exe --input examples/multi-output/PRESENT_4x4_transposed_hex.txt --n 4 --m 4 --radix hex --transpose --metrics diff_uniformity,linearity --ddt --lat --out results
 ```
 
 后端自检：
 
 ```powershell
-python -m unittest discover -s tests -v
+python -m unittest discover -s multi-output/tests -v
 ```
 
 ## 文件结构
 
 ```text
-cpp/vbf_core.cpp          独立 C++ 输入、转换、按需指标、DDT/LAT 与 CLI
-cpp/build.ps1             MSVC 编译脚本
-app/src/                  React 桌面界面
-app/electron/             Electron 文件操作和 C++ 进程桥接
-app/package.json          前端与便携版打包配置
-app/pnpm-lock.yaml        锁定依赖版本
-tests/                    独立参考公式与回归用例
-examples/                 PRESENT 4×4 的逐词及转置输入与 ANF 参考
-scripts/make_release.py   完整源码包与 SHA-256 清单
+app/                             统一桌面界面与打包配置
+multi-output/cpp/vbf_core.cpp    多输出 C++ 引擎与命令行入口
+multi-output/cpp/build.ps1       MSVC 编译脚本
+multi-output/tests/             独立参考公式与回归用例
+examples/multi-output/          PRESENT 4×4 的真值表与 ANF 范例
+scripts/make_release.py         完整源码包与 SHA-256 清单
 ```
 
 源代码包同时附有工作区中的多输出 XMind 导图及 C++ 功能实现大纲，便于继续扩展。EXE 未做代码签名，首次运行可能显示 Windows 发布者提示。

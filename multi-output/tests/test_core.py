@@ -250,7 +250,7 @@ class CoreTests(unittest.TestCase):
         for name, radix in (("PRESENT_4x4_transposed_binary.txt", "bin"),
                             ("PRESENT_4x4_transposed_hex.txt", "hex")):
             with self.subTest(name=name):
-                source = ROOT / "examples" / name
+                source = ROOT.parent / "examples" / "multi-output" / name
                 done = subprocess.run([str(CORE), "--input", str(source), "--n", "4", "--m", "4",
                                        "--radix", radix, "--transpose", "--metrics", "balance",
                                        "--out", str(self.folder / "fixture_results")],

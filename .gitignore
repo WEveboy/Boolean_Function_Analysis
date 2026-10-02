@@ -4,6 +4,7 @@ app/dist/
 dist/
 cpp/build/
 tmp-tests/
+tmp/
 *.obj
 __pycache__/
 *.pyc
