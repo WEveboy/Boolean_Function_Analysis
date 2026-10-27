@@ -48,3 +48,12 @@
 - [单输出 C++ 设计大纲](docs/design/单输出布尔函数_C++功能实现文件大纲.md) · [多输出 C++ 设计大纲](docs/design/多输出布尔函数_C++功能实现文件大纲.md) · [指标思维导图](docs/design/)。
 
 `main` 分支保存持续更新的源码；[v2.1.0 Release](https://github.com/WEveboy/Boolean_Function_Analysis/releases/tag/v2.1.0) 中的 EXE 与源码 ZIP 是该版本发布时的快照。发布包附带 `SHA256SUMS.txt`，可用于核对下载文件。
+
+## 贡献者
+
+| 贡献者 | 贡献说明 |
+| --- | --- |
+| [WEveboy](https://github.com/WEveboy) | 项目发起、研究目标与需求确定、维护和发布决策。 |
+| **Codex（OpenAI AI 编程助手）** | 协助代码整合与调试、测试核验、使用文档编写，以及 GitHub 更新与发布流程整理。 |
+
+Codex 以 AI 辅助贡献者身份署名，用于如实记录本项目中的协作工作。
